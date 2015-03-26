@@ -1,0 +1,9 @@
+*.*
+*
+!*/
+!Makefile
+!README.md
+!*Protocol.txt
+!*.c
+!*.h
+!.gitignore
