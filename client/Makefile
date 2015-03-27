@@ -1,6 +1,6 @@
 CC		= gcc
 LD		= ld
-CFLAGS	= -MD -fno-strict-aliasing -std=c99 -g -I./*.h
+CFLAGS	= -MD -fno-strict-aliasing -std=c99 -g -I./include
 CFILES	= $(shell find . -name "*.c")
 OBJS	= $(CFILES:.c=.o)
 MAIN	= client
