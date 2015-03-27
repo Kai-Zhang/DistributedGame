@@ -1,0 +1,13 @@
+Text Based Game Protocol v1.0
+-----------------------------
+
+The Text Based Game Protocol is an application layer protocol running over 
+TCP, providing game controling, user controling, and other functions. In 
+this document, we will specify the structure and function of the protocol. 
+
+This document is not quite rigorous. For anything not mentioned here, please
+refer to the source code.
+
+
+1. the packer structure of TBGP
+
