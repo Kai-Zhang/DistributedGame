@@ -1,19 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <pthread.h>
 
-void *client_handle(Void *sockfd_ptr) {
-	int sockfd = *(int *)sockfd_ptr;
-
-	// TODO: Function here!
-
-	printf("Socket #%d closed.\n", sockfd);
-	pthread_exit((void *)0);
-}
+void *client_handle(void *);
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
@@ -36,7 +29,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	puts("Server is running!");
-	int sin_size = sizeof(struct sockaddr_in);
+	socklen_t sin_size = sizeof(struct sockaddr_in);
 	while (1) {
 		listen(serverfd, 10);
 

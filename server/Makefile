@@ -1,6 +1,6 @@
-CC		= gcc
+CC		= g++
 LD		= ld
-CFLAGS	= -MD -fno-strict-aliasing -std=c99 -g -I./*.h -pthread
+CFLAGS	= -MD -fno-strict-aliasing -g -I./include -pthread
 CFILES	= $(shell find . -name "*.c")
 OBJS	= $(CFILES:.c=.o)
 MAIN	= server
