@@ -9,5 +9,144 @@ This document is not quite rigorous. For anything not mentioned here, please
 refer to the source code.
 
 
-1. the packer structure of TBGP
+1. The Packet Structure of TBGP
+The TBGP packet structure is as follows:
 
+        |<------ 4Bytes ------>|<-2 Bytes->|<-2 Bytes->|
+        +----------------------+-----------+-----------+
+		|  0x5  0x5  0xa  0xa  |  service  |  pkt_len  |
+		+----------------------+-----------+-----------+
+		/                     Data*                    /
+		+----------------------------------------------+
+
+* Theoretically, the data section can support 65535 bytes at most. But
+practically, the data section mostly does not exceed about 1024 bytes.
+
+All numeric fields are stored in network byte order. Aka Most significant
+byte first.
+
+0x55aa	- The first four bytes are always 0x55aa, to identify the TBGP
+          packet.
+service	- An opcode to tell the client/server to take proper action. The
+          possible service are listed in the service section of this
+		  document.
+pkt_len	- A two-byte value, in network byte order, stating how many bytes
+          are in the data section of the packet.
+data	- The data section is pkt_len bytes long and depends on the service
+          section to interpret.
+
+
+2. Services
+
+There are  known services at the moment, although more may exist. All
+known services are listed below along with the hex values that they
+correspond to.
+
+		SERVICE_LOGIN		= 0x01
+		SERVICE_LOGOUT		= 0x02
+		SERVICE_NAMELIST	= 0x04
+		SERVICE_UPDATELIST	= 0x05
+		SERVICE_CHAT		= 0x08
+		SERVICE_GAMEREQUEST	= 0x10
+		SERVICE_GAMEON		= 0x11
+		SERVICE_GAMEOP		= 0x18
+
+
+3. Game Operation
+
+When game is on the client and server will constantly exchange data and
+control messages. The service of the packet is always SERVICE_GAMEOP. And
+the details will be transfered in data section. The data section's structure
+of gameop is as follows:
+
+        |<-2 Bytes->|
+        +-----------+------...------+------...------+
+		|   OPCODE  |  User1 status |  User2 status |
+		+-----------+------...------+------...------+
+
+The details of user status will not be discussed in this document.
+The opcode is specify the action of the attacker. The possible opcode is as
+follows:
+
+		GAME_PHYSICAL_ATTACK	= 0x01
+		GAME_MAGICAL_ATTACK		= 0x02
+		GAME_RETREAT			= 0x08
+		GAME_CONCEDE			= 0x09
+		GAME_WIN				= 0x10
+		GAME_LOSE				= 0x11
+
+
+4. Requests & Responses
+
+4.1 Login
+
+The first packet sent from the client is log in packet. This consists a
+username whose length is 32 bytes at most.
+
+	Service:	SERVICE_LOGIN
+	Data:		Username(32 Bytes)
+
+When a user is logged in, the server returns a series of usernames, which
+represent the online users, and a user status right behind it. The status
+will be discussed in status subsection. The accurate number of names can be
+calculate with pkt_len section.
+
+	Service:	SERVICE_NAMELIST
+	Data:		Username(32 Bytes) + status(4 Bytes)...
+
+If there're too many online users, for example over 1820 users, the server
+will send a update packet to update the name list. Client will check the
+existing list and delete the repeated name and add the rest of the name.
+
+	Service:	SERVICE_UPDATELIST
+	Data:		Username(32 Bytes) + status(4 Bytes)...
+
+
+4.2 Chat
+
+A logged in user can send message to an online user or to all the online
+users. The server's behaviour depends on the pkt_len: if pkt_len is zero,
+then the server will forward the message to all the online users. Otherwise
+the server will only forward to the user in the data. Theoretically the
+server can forward message to a series of users.
+
+	Service:	SERVICE_CHAT
+	Data:		Username(32 Bytes)...
+
+
+4.3 Fight Game
+
+4.3.1 Game Start
+
+When a user would like to start a game with another online user, the client
+will send a game request packet to the server, which includes the username
+of the rival. The server will forward the request. And the server will
+forward the game on packet to tell the user the game request is accepted.
+
+	Service:	SERVICE_GAMEREQUEST
+	Data:		Username(32 Bytes)
+
+4.3.2 Ongoing
+
+The client and the server will constantly exchange the game operation packet
+unless the game is settled or one quits.
+
+	Service:	SERVICE_GAMEOP
+	Data:		[OPCODE] [attacker's status] [defender's status]
+
+
+4.4 User Status
+
+The status is to distinguish the gaming user and free user, and also to
+determine if a user is offline when update the name list. To del a user,
+a specific bit in status will be set while this bit is clear when add a
+user. Similarly, a specific bit will be set if the user is in the game. The
+status will be as follows:
+
+	//  USER_ADD		= 0x0
+		USER_DEL		= 0x1
+	//  USER_AVAILABLE	= 0x0
+		USER_GAMING		= 0x10
+
+
+** For more details, please refer to the source code. **
