@@ -87,19 +87,18 @@ username whose length is 32 bytes at most.
 	Data:		Username(32 Bytes)
 
 When a user is logged in, the server returns a series of usernames, which
-represent the online users, and a user status right behind it. The status
-will be discussed in status subsection. The accurate number of names can be
-calculate with pkt_len section.
+represent the online users. The accurate number of names can be calculate
+with pkt_len section.
 
 	Service:	SERVICE_NAMELIST
-	Data:		Username(32 Bytes) + status(4 Bytes)...
+	Data:		Username(32 Bytes)...
 
 If there're too many online users, for example over 1820 users, the server
 will send a update packet to update the name list. Client will check the
 existing list and delete the repeated name and add the rest of the name.
 
 	Service:	SERVICE_UPDATELIST
-	Data:		Username(32 Bytes) + status(4 Bytes)...
+	Data:		Username(32 Bytes)...
 
 
 4.2 Chat
@@ -134,19 +133,6 @@ unless the game is settled or one quits.
 	Service:	SERVICE_GAMEOP
 	Data:		[OPCODE] [attacker's status] [defender's status]
 
-
-4.4 User Status
-
-The status is to distinguish the gaming user and free user, and also to
-determine if a user is offline when update the name list. To del a user,
-a specific bit in status will be set while this bit is clear when add a
-user. Similarly, a specific bit will be set if the user is in the game. The
-status will be as follows:
-
-	//  USER_ADD		= 0x0
-		USER_DEL		= 0x1
-	//  USER_AVAILABLE	= 0x0
-		USER_GAMING		= 0x10
 
 
 ** For more details, please refer to the source code. **
