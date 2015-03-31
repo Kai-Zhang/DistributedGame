@@ -1,4 +1,5 @@
 #include <cstdio>
+#include <cstring>
 #include <unistd.h>
 
 #include "protocol.h"
@@ -7,9 +8,7 @@
 
 void game_handle(struct game_packet *, int, int&);
 
-static struct game_packet failure_packet;
-static struct game_packet win_packet;
-static struct game_packet lose_packet;
+struct game_packet failure_packet;
 
 void client_handle(int sockfd) {
 	char buffer[sizeof(struct game_packet)];
@@ -17,12 +16,6 @@ void client_handle(int sockfd) {
 	int rivalsock = -1;
 	failure_packet.service = SERVICE_FAILED;
 	failure_packet.pkt_len = 0;
-	win_packet.service = SERVICE_GAMEOP;
-	win_packet.pkt_len = sizeof(GAME_WIN);
-	gameop(&win_packet) = GAME_WIN;
-	lose_packet.service = SERVICE_GAMEOP;
-	lose_packet.pkt_len = sizeof(GAME_LOSE);
-	gameop(&lose_packet) = GAME_LOSE;
 
 	if (recv_packet(sockfd, buffer) <= 0) {
 		close(sockfd);
@@ -46,7 +39,7 @@ void client_handle(int sockfd) {
 				if (user - packet->data == packet->pkt_len) {
 					broadcast(packet);
 				}
-				for (int i = 0; i < packet->pkt_len; i += 32) {
+				for (int i = 0; i < packet->pkt_len; i += NAME_SIZE) {
 					send_to(user, packet);
 				}
 				break;
@@ -81,18 +74,28 @@ void client_handle(int sockfd) {
 void game_handle(struct game_packet *packet, int selfsock, int &rivalsock) {
 	struct player *self = self_player(packet);
 	struct player *rival = rival_player(packet);
+	struct game_packet return_packet;
+	int attack_result = 0;
 	switch (gameop(packet)) {
 		case GAME_PHYSICAL_ATTACK:
-			if (physical_attack(*self, *rival) == EFFECT_SETTLED) {
-				send_packet(rivalsock, &lose_packet);
-				send_packet(selfsock, &win_packet);
+			attack_result = physical_attack(*self, *rival);
+			gameop(packet) |= attack_result;
+			send_packet(selfsock, packet);
+			if (attack_result & EFFECT_SETTLED) {
+				memcpy(&return_packet, packet, sizeof(struct game_packet));
+				gameop(&return_packet) |= GAME_LOSE;
+				send_packet(rivalsock, &return_packet);
 				rivalsock = -1;
 			}
 			break;
 		case GAME_MAGICAL_ATTACK:
-			if (magical_attack(*self, *rival) == EFFECT_SETTLED) {
-				send_packet(rivalsock, &lose_packet);
-				send_packet(selfsock, &win_packet);
+			attack_result = magical_attack(*self, *rival);
+			gameop(packet) |= attack_result;
+			send_packet(selfsock, packet);
+			if (attack_result & EFFECT_SETTLED) {
+				memcpy(&return_packet, packet, sizeof(struct game_packet));
+				gameop(&return_packet) |= GAME_LOSE;
+				send_packet(rivalsock, &return_packet);
 				rivalsock = -1;
 			}
 			break;
@@ -101,7 +104,8 @@ void game_handle(struct game_packet *packet, int selfsock, int &rivalsock) {
 			rivalsock = -1;
 			break;
 		case GAME_CONCEDE:
-			send_packet(selfsock, &win_packet);
+			gameop(packet) |= GAME_WIN;
+			send_packet(rivalsock, packet);
 			rivalsock = -1;
 			break;
 		default:

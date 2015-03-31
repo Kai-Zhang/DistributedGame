@@ -42,14 +42,15 @@ There are 8 known services at the moment, although more may exist. All
 known services are listed below along with the hex values that they
 correspond to.
 
-		SERVICE_LOGIN		= 0x01
-		SERVICE_LOGOUT		= 0x02
-		SERVICE_NAMELIST	= 0x04
-		SERVICE_CHAT		= 0x08
-		SERVICE_GAMEREQUEST	= 0x10
-		SERVICE_GAMEON		= 0x11
-		SERVICE_GAMEOP		= 0x18
-		SERVICE_FAILED		= 0xff
+		SERVICE_LOGIN       = 0x01
+		SERVICE_LOGOUT      = 0x02
+		SERVICE_NAMELIST    = 0x04
+		SERVICE_CHAT        = 0x08
+		SERVICE_GAMEREQUEST = 0x10
+		SERVICE_GAMEON      = 0x11
+		SERVICE_GAMEREFUSED = 0x12
+		SERVICE_GAMEOP      = 0x18
+		SERVICE_FAILED      = 0xff
 
 Most of the service codes should be self explanatory. Those that aren't are
 listed here:
@@ -74,13 +75,17 @@ The details of user status will not be discussed in this document.
 The opcode is specify the action of the attacker. The possible opcode is as
 follows:
 
-		GAME_CHR_CREATE			= 0x00
-		GAME_PHYSICAL_ATTACK	= 0x01
-		GAME_MAGICAL_ATTACK		= 0x02
-		GAME_RETREAT			= 0x08
-		GAME_CONCEDE			= 0x09
-		GAME_WIN				= 0x10
-		GAME_LOSE				= 0x11
+		GAME_CHR_CREATE         = 0x00
+		GAME_PHYSICAL_ATTACK    = 0x01
+		GAME_MAGICAL_ATTACK     = 0x02
+		GAME_MISS               = 0x04
+		GAME_CRITICAL_HIT       = 0x08
+		GAME_RETREAT            = 0x10
+		GAME_CONCEDE            = 0x11
+		GAME_WIN                = 0x80
+		GAME_LOSE               = 0xc0
+
+These options can be combined to interpret various meanings.
 
 
 4. Requests & Responses

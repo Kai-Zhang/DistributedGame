@@ -44,9 +44,11 @@ const uint16_t SERVICE_FAILED		= 0xff;
 const uint16_t GAME_CHR_CREATE		= 0x00;
 const uint16_t GAME_PHYSICAL_ATTACK	= 0x01;
 const uint16_t GAME_MAGICAL_ATTACK	= 0x02;
-const uint16_t GAME_RETREAT			= 0x08;
-const uint16_t GAME_CONCEDE			= 0x09;
-const uint16_t GAME_WIN				= 0x10;
-const uint16_t GAME_LOSE			= 0x11;
+const uint16_t GAME_MISS			= 0x04;
+const uint16_t GAME_CRITICAL_HIT	= 0x08;
+const uint16_t GAME_RETREAT			= 0x10;
+const uint16_t GAME_CONCEDE			= 0x11;
+const uint16_t GAME_WIN				= 0x80;
+const uint16_t GAME_LOSE			= 0xc0;
 
 #endif
