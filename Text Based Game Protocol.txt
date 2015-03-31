@@ -12,8 +12,8 @@ refer to the source code.
 1. The Packet Structure of TBGP
 The TBGP packet structure is as follows:
 
-        |<------ 4Bytes ------>|<-2 Bytes->|<-2 Bytes->|
-        +----------------------+-----------+-----------+
+		|<------ 4Bytes ------>|<-2 Bytes->|<-2 Bytes->|
+		+----------------------+-----------+-----------+
 		|  0x5  0x5  0xa  0xa  |  service  |  pkt_len  |
 		+----------------------+-----------+-----------+
 		/                     Data*                    /
@@ -59,8 +59,8 @@ control messages. The service of the packet is always SERVICE_GAMEOP. And
 the details will be transfered in data section. The data section's structure
 of gameop is as follows:
 
-        |<-2 Bytes->|
-        +-----------+------...------+------...------+
+		|<-2 Bytes->|
+		+-----------+------...------+------...------+
 		|   OPCODE  |  User1 status |  User2 status |
 		+-----------+------...------+------...------+
 
@@ -93,7 +93,7 @@ with pkt_len section.
 	Service:	SERVICE_NAMELIST
 	Data:		Username(32 Bytes)...
 
-If there're too many online users, for example over 1820 users, the server
+If there're too many online users, for example over 2048 users, the server
 will send a update packet to update the name list. Client will check the
 existing list and delete the repeated name and add the rest of the name.
 
@@ -110,7 +110,7 @@ the server will only forward to the user in the data. Theoretically the
 server can forward message to a series of users.
 
 	Service:	SERVICE_CHAT
-	Data:		Username(32 Bytes)...
+	Data:		Chat String(ends with NULL) + Username(32 Bytes)...
 
 
 4.3 Fight Game
