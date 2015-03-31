@@ -38,18 +38,24 @@ data	- The data section is pkt_len bytes long and depends on the service
 
 2. Services
 
-There are  known services at the moment, although more may exist. All
+There are 8 known services at the moment, although more may exist. All
 known services are listed below along with the hex values that they
 correspond to.
 
 		SERVICE_LOGIN		= 0x01
 		SERVICE_LOGOUT		= 0x02
 		SERVICE_NAMELIST	= 0x04
-		SERVICE_UPDATELIST	= 0x05
 		SERVICE_CHAT		= 0x08
 		SERVICE_GAMEREQUEST	= 0x10
 		SERVICE_GAMEON		= 0x11
 		SERVICE_GAMEOP		= 0x18
+		SERVICE_FAILED		= 0xff
+
+Most of the service codes should be self explanatory. Those that aren't are
+listed here:
+
+SERVICE_FAILED	- A kind of packet the server use to inform the client that
+                  the client has sent some invalid packet.
 
 
 3. Game Operation
@@ -68,6 +74,7 @@ The details of user status will not be discussed in this document.
 The opcode is specify the action of the attacker. The possible opcode is as
 follows:
 
+		GAME_CHR_CREATE			= 0x00
 		GAME_PHYSICAL_ATTACK	= 0x01
 		GAME_MAGICAL_ATTACK		= 0x02
 		GAME_RETREAT			= 0x08
@@ -104,10 +111,10 @@ existing list and delete the repeated name and add the rest of the name.
 4.2 Chat
 
 A logged in user can send message to an online user or to all the online
-users. The server's behaviour depends on the pkt_len: if pkt_len is zero,
-then the server will forward the message to all the online users. Otherwise
-the server will only forward to the user in the data. Theoretically the
-server can forward message to a series of users.
+users. The server's behaviour depends on the pkt_len: if there's no specify
+username. then the server will forward the message to all the online users.
+Otherwise the server will only forward to the user in the data.
+Theoretically the server can forward message to a series of users.
 
 	Service:	SERVICE_CHAT
 	Data:		Chat String(ends with NULL) + Username(32 Bytes)...
@@ -121,18 +128,40 @@ When a user would like to start a game with another online user, the client
 will send a game request packet to the server, which includes the username
 of the rival. The server will forward the request. And the server will
 forward the game on packet to tell the user the game request is accepted.
+If the other user refused to join in the battle, he must send a refuse
+packet back.
 
 	Service:	SERVICE_GAMEREQUEST
+	Data:		Received User(32 Bytes) + Initial User(32 Bytes)
+
+	Service:	SERVICE_GAMEON
+	Data:		Username(32 Bytes)
+
+	Service:	SERVICE_GAMEREFUSE
 	Data:		Username(32 Bytes)
 
 4.3.2 Ongoing
 
 The client and the server will constantly exchange the game operation packet
-unless the game is settled or one quits.
+unless the game is settled or one quits. For the first round, both of users
+should exchange GAME_CHR_CREATE packet to confirm own character.
 
 	Service:	SERVICE_GAMEOP
 	Data:		[OPCODE] [attacker's status] [defender's status]
 
+	Service:	SERVICE_GAMEOP
+	Gameop:		GAME_CHR_CREATE
+	Data:		[User Status]
+
+
+4.4 Invalid Operation
+
+Since the server is working like a state machine, for a certain state if the
+receiving packet has no next state the server will send a failure packet to
+client to inform the mistake.
+
+	Service:	SERVICE_FAILURE
+	Data:		none (pkt_len = 0)
 
 
 ** For more details, please refer to the source code. **
