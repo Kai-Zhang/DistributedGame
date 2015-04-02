@@ -10,5 +10,7 @@ void login(char *, int);
 void logout(char *, int);
 void chat_to(char *, char *);
 int get_user_sock(char *);
+int get_user_status(char *);
+bool set_user_status(char *, int);
 
 #endif

@@ -7,27 +7,49 @@
 using namespace std;
 
 #include "functions.h"
+#include "user.h"
 
 // TODO: please consider the thread safety.
 static map<string, int> sockmap;
-static list<string> userlist;
+static list<struct online_user> userlist;
 int last_list_size = 0;
 
 int get_user_sock(char *username) {
 	return sockmap[username];
 }
 
+int get_user_status(char *username) {
+	for (list<struct online_user>::iterator iter = userlist.begin();
+			iter != userlist.end(); iter++) {
+		if (iter->username == username) {
+			return iter->status;
+		}
+	}
+	return -1;
+}
+
+bool set_user_status(char *username, int status) {
+	for (list<struct online_user>::iterator iter = userlist.begin();
+			iter != userlist.end(); iter++) {
+		if (iter->username == username) {
+			iter->status = status;
+			return true;
+		}
+	}
+	return false;
+}
+
 void broadcast(struct game_packet *packet) {
-	list<string>::iterator iter = userlist.begin();
+	list<struct online_user>::iterator iter = userlist.begin();
 	if (packet->service == SERVICE_NAMELIST) {
 		packet->pkt_len = 0;
 		for (iter = userlist.begin(); iter != userlist.end(); iter ++) {
-			strncpy((char *)packet->data + packet->pkt_len, iter->c_str(), NAME_SIZE);
+			strncpy((char *)packet->data + packet->pkt_len, iter->username.c_str(), NAME_SIZE);
 			packet->pkt_len += NAME_SIZE;
 		}
 	}
 	for (iter = userlist.begin(); iter != userlist.end(); iter ++) {
-		send_packet(sockmap[(*iter)], packet);
+		send_packet(sockmap[(iter->username)], packet);
 	}
 }
 
@@ -41,7 +63,7 @@ void send_to(char *username, struct game_packet *packet) {
 }
 
 void login(char *username, int fd) {
-	userlist.push_back(username);
+	userlist.push_back({username, USER_AVAILABLE});
 	sockmap.insert(pair<string, int>(username, fd));
 	struct game_packet packet;
 	packet.service = SERVICE_NAMELIST;
@@ -50,7 +72,7 @@ void login(char *username, int fd) {
 
 void logout(char *username, int fd) {
 	sockmap.erase(username);
-	userlist.remove(username);
+	userlist.remove({username, 0});
 	struct game_packet packet;
 	packet.service = SERVICE_NAMELIST;
 	broadcast(&packet);

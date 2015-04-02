@@ -1,11 +1,11 @@
-CC			= g++
-LD			= ld
-CPPFLAGS	= -MD -fno-strict-aliasing -std=c++11 -g -I./include
-CFILES		= $(shell find . -name "*.cpp")
-HEADERS		= $(shell find . -name "*.h")
-OBJS		= $(CFILES:.cpp=.o)
-MAIN		= server
-PORT		= 60000
+CC          = g++
+LD          = ld
+CPPFLAGS    = -MD -fno-strict-aliasing -std=c++11 -g -I./include
+CFILES      = $(shell find . -name "*.cpp")
+HEADERS     = $(shell find . -name "*.h")
+OBJS        = $(CFILES:.cpp=.o)
+MAIN        = server
+PORT        = 60000
 
 $(MAIN): $(OBJS)
 	$(CC) $(CFLAGS) -o $(MAIN) $(OBJS)

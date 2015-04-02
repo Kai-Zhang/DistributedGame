@@ -137,13 +137,13 @@ If the other user refused to join in the battle, he must send a refuse
 packet back.
 
 	Service:	SERVICE_GAMEREQUEST
-	Data:		Received User(32 Bytes) + Initial User(32 Bytes)
+	Data:		Destination Username(32 Bytes) + Source Username(32 Bytes)
 
 	Service:	SERVICE_GAMEON
-	Data:		Username(32 Bytes)
+	Data:		Destination Username(32 Bytes) + Source Username(32 Bytes)
 
 	Service:	SERVICE_GAMEREFUSE
-	Data:		Username(32 Bytes)
+	Data:		Destination Username(32 Bytes) + Source Username(32 Bytes)
 
 4.3.2 Ongoing
 
