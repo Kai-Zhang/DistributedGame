@@ -7,6 +7,7 @@
 #include <thread>
 
 void client_handle(int);
+int test_setup();
 
 int main(int argc, char *argv[]) {
 	if (argc != 2) {

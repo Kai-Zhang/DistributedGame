@@ -1,6 +1,7 @@
 #include "game.h"
 
-const int mp_consume[3] = {
+const int mp_consume[] = {
+	0,
 	WARRIOR_MPCONSUME,
 	MAGICIAN_MPCONSUME,
 	ARCHER_MPCONSUME
