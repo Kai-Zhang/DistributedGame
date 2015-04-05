@@ -1,3 +1,4 @@
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -9,7 +10,7 @@
 #include <protocol.h>
 #include <character.h>
 
-#define MAXLINE 128;
+#define MAXLINE 128
 
 static int login = 0;
 //important tip : not decided yet will also make Gameon 1;
@@ -39,65 +40,73 @@ int init_sock(char **sys_args) {
 	return sockfd;
 }
 
-void struct_player_print(struct player *a){
-    switch (a->character) {
-        0x1 :printf("character : warrior\n");
-        0x2 :printf("character : magician\n");
-        0x3 :printf("character : archer\n");
+void struct_player_print(struct player a){
+    switch (a.character) {
+        case 0x1 :printf("character : warrior\n");break;
+        case 0x2 :printf("character : magician\n");break;
+        case 0x3 :printf("character : archer\n");break;
     }
-    printf("health point : %s\n",a->health_point);
-    printf("magicpoint : %s\n",a->magic_point);
-    printf("defense : %s\n",a->defense);
-    printf("strength : %s\n",a->strength);
-    printf("speed : %s\n",a->speed);
+    printf("health point : %d\n",a.health_point);
+    printf("magicpoint : %d\n",a.magic_point);
+    printf("defense : %d\n",a.defense);
+    printf("strength : %d\n",a.strength);
+    printf("speed : %d\n",a.speed);
 }
 
-void struct_gameop_print(struct game_op_packet *a) {
+void struct_gameop_print(struct game_op_packet *gameop) {
     switch (gameop->game_op) {
-		case GAME_PHYSICAL_ATTACK: {
-		    printf{"physical attack !\nFrom:\n"};
+		case 0x01: {
+		    printf("physical attack !\nFrom:\n");
 		    struct_player_print(gameop->from);
 		    printf("to:\n");
 		    struct_player_print(gameop->to);
-		    }
-		case GAME_MAGICAL_ATTACK: {
-		    printf{"magical attack !\nFrom:\n"};
+		    break;
+		    };
+		case 0x02: {
+		    printf("magical attack !\nFrom:\n");
 		    struct_player_print(gameop->from);
 		    printf("to:\n");
 		    struct_player_print(gameop->to);
-		    }
-		case GAME_MISS: {
-		    printf{"attact miss !\nFrom:\n"};
+		    break;
+		    };
+		case 0x04: {
+		    printf("attact miss !\nFrom:\n");
 		    struct_player_print(gameop->from);
 		    printf("to:\n");
 		    struct_player_print(gameop->to);
-		    }
-		case GAME_CRITICAL_HIT: {
-		    printf{"physical attack !\nFrom:\n"};
+		    break;
+		    };
+		case 0x08: {
+		    printf("physical attack !\nFrom:\n");
 		    struct_player_print(gameop->from);
 		    printf("to:\n");
 		    struct_player_print(gameop->to);
-		    }
-		case GAME_RETREAT: {
-		    printf{"retreat !\nFrom:\n"};
+		    break;
+		    };
+		case 0x10: {
+		    printf("retreat !\nFrom:\n");
 		    struct_player_print(gameop->from);
 		    printf("to:\n");
 		    struct_player_print(gameop->to);
-		    }
-		case GAME_CONCEDE: {
-		    printf{"concede !\nFrom:\n"};
+		    break;
+		    };
+		case 0x11: {
+		    printf("concede !\nFrom:\n");
 		    struct_player_print(gameop->from);
 		    printf("to:\n");
 		    struct_player_print(gameop->to);
-		    }
-		case GAME_WIN: {
-		    printf{"you have won !\n");
+		    break;
+		    };
+		case 0x80: {
+		    printf("you have won !\n");
 		    Gameon = 0;
-		    }
-		case GAME_LOSE: {
-		    printf{"you have lost !\n"};
+		    break;
+		    };
+		case 0xc0: {
+		    printf("you have lost !\n");
 		    Gameon = 0;
-		    }
+		    break;
+		    };
 	}
 }
  
@@ -107,6 +116,7 @@ void struct_gameop_print(struct game_op_packet *a) {
             //1. namelist change and chat from server
             void *get1(void *	conn){
 	            int sockfd=(int)conn;
+	            
                 while (recv(sockfd, recvline1, MAXLINE, 0) != 0) {
                     struct game_packet *packet = (struct game_packet *)recvline1;
 		            if(packet->magic_number == 0x55aa) {
@@ -117,7 +127,7 @@ void struct_gameop_print(struct game_op_packet *a) {
                         }
                         //waited to be discussed
                         if(packet->service == SERVICE_CHAT) {
-                            lenofdata = packet.pkt_len;
+                            lenofdata = packet->pkt_len;
                             for(setfor_for = 0; setfor_for < lenofdata; setfor_for++) {
                                 recvdata[setfor_for] = recvline[setfor_for + 8];
                             }
@@ -141,7 +151,7 @@ void struct_gameop_print(struct game_op_packet *a) {
                         for(setfor_for = 0; setfor_for < pkt_len; setfor_for++) {
                             packet->data[setfor_for] = sendline1[setfor_for + 1];
                         }
-                        send(sockfd, packet, packet.pkt_len + 8, 0);
+                        send(sockfd, packet, packet->pkt_len + 8, 0);
                         Chatout = 0;
                     }
                         
@@ -159,18 +169,19 @@ void struct_gameop_print(struct game_op_packet *a) {
                                 packet->data[setfor_for] = sendline[setfor_for + 1];
                             }
                         }
-                        send(sockfd, packet, send.pkt_len + 8, 0);
+                        send(sockfd, packet, packet->pkt_len + 8, 0);
                         Chatout = 0;
                     }
                     if(sendline[0] == 'L') {
-                        send.magic_number = 0x55aa;
-                        send.service = SERVICE_LOGIN;
-                        send.pkt_len = strlen(sendline)-1;
+                        struct game_packet *packet = (struct game_packet *)sendline1;
+                        packet->magic_number = 0x55aa;
+                        packet->service = SERVICE_LOGIN;
+                        packet->pkt_len = strlen(sendline)-1;
                         for(setfor_for = 0; setfor_for < pkt_len; setfor_for++) {
-                            send.data[setfor_for] = sendline[setfor_for + 1];
+                            packet->data[setfor_for] = sendline[setfor_for + 1];
                             selfname[setfor_for] = sendline[setfor_for + 1];
                         }
-                        send(sockfd, &send, send.pkt_len + 8, 0);
+                        send(sockfd, packet, packet->pkt_len + 8, 0);
                         printf("you have logged out\n");
                         break;
                     }   
@@ -187,10 +198,10 @@ void struct_gameop_print(struct game_op_packet *a) {
                             struct game_start_packet *packet = (struct game_packet *)sendline2;
                             Gameon = 1;
                             packet->magic_number = 0x55aa;
-                            packet->service = SERVICE_REQUEST;
+                            packet->service = 0x10;
                             packet->pkt_len = 32;
                             fgets(packet->data1, 16, stdin);
-                            packet->data2 = selfname;
+                            strcpy(packet->data2,selfname);
                             send(sockfd, packet, 40, 0);
                             while(recv(sockfd, recvline2, MAXLINE, 0) != 0) {
                                 struct game_packet *packet = (struct game_packet *)recvline2;
@@ -361,7 +372,6 @@ void struct_gameop_print(struct game_op_packet *a) {
                                                 break;
                                             }
                                             if(e->character == 0x3) {
-                                                server->character = PRO_ARCHER;
                                                 server.character = PRO_ARCHER;
                                                 server.health_point = ARCHER_MAX_HP;
                                                 server.magic_point = ARCHER_MAX_MP;
@@ -381,11 +391,11 @@ void struct_gameop_print(struct game_op_packet *a) {
 		                        d->pkt_len = 14;
 		                        d->service = SERVICE_GAMEOP;
 		                        struct game_op_packet *gameop2 = (struct game_op_packet *)d->data;
-		                        char c = getchar();
-		                        switch (c) {
-		                            'p':gameop2->game_op = 0x01;
-		                            'm':gameop2->game_op = 0x02;
-		                            'f':Gameon = 0;gameop2->game_op = 0xc0;
+		                        char f = getchar();
+		                        switch (f) {
+		                            case 'p':gameop2->game_op = 0x01;break;
+		                            case 'm':gameop2->game_op = 0x02;break;
+		                            case 'f':Gameon = 0;gameop2->game_op = 0xc0;break;
 		                        }
 		                        gameop2->from = local;
 		                        gameop2->to = server;
@@ -468,7 +478,7 @@ int main(int argc, char *argv[]) {
                     packet->data[setfor_for] = sendline[setfor_for + 1];
                     selfname[setfor_for] = sendline[setfor_for + 1];
                 }
-                send(sockfd, packet, send.pkt_len + 8, 0);
+                send(sockfd, packet, packet->pkt_len + 8, 0);
                 printf("you have logged in and your name is%s\n",selfname);
                 
                 printf("you have several choice : 1.R means request to sb then you should type in a name\n");

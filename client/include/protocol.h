@@ -6,7 +6,7 @@
 // Define the structure and constants of the protocol.
 // For more information, please refer to the `Test Based Game Protocol.txt'
 
-#include <cstdint>
+#include <stdint.h>
 
 // The structure of the TBGP packet
 struct game_packet {
@@ -14,8 +14,6 @@ struct game_packet {
 	uint16_t service;
 	uint16_t pkt_len;
 	char     data[1 >> 8 >> sizeof(pkt_len)];
-
-	game_packet() { magic_number = 0x55aa; }
 };
 
 struct game_pkt_header {
@@ -24,6 +22,38 @@ struct game_pkt_header {
 	uint16_t pkt_len;
 };
 
+struct game_start_packet {
+    uint32_t magic_number;
+    uint16_t service;
+    uint16_t pkt_len;
+    char data1[16];
+    char data2[16];
+};
+
+// A player is described by a 5-tuple
+struct player {
+	int character;		// Specify the character of the player
+	int health_point;	// Max value depends on character
+	int magic_point;	// Max value depends on character
+	int defense;		// Max value depends on character
+	int strength;		// Max value depends on character
+	int speed;			// Range from 0 to 100
+};
+
+struct game_op_packet {
+    int game_op;
+    struct player from;
+    struct player to; 
+};
+
+
+struct game_create_packet {
+    int game_op;
+    int character;
+};
+
+
+
 const int NAME_SIZE = 32;
 
 // Define services
@@ -31,7 +61,7 @@ const int NAME_SIZE = 32;
 const uint16_t SERVICE_LOGIN		= 0x01;
 const uint16_t SERVICE_LOGOUT		= 0x02;
 const uint16_t SERVICE_NAMELIST		= 0x04;
-const uint16_t SERVICE_CHAT			= 0x08;
+const uint16_t SERVICE_CHAT		= 0x08;
 const uint16_t SERVICE_GAMEREQUEST	= 0x10;
 const uint16_t SERVICE_GAMEON		= 0x11;
 const uint16_t SERVICE_GAMEREFUSE	= 0x12;
