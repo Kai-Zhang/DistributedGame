@@ -105,13 +105,6 @@ with pkt_len section.
 	Service:	SERVICE_NAMELIST
 	Data:		Username(32 Bytes)...
 
-If there're too many online users, for example over 2048 users, the server
-will send a update packet to update the name list. Client will check the
-existing list and delete the repeated name and add the rest of the name.
-
-	Service:	SERVICE_UPDATELIST
-	Data:		Username(32 Bytes)...
-
 
 4.2 Chat
 
