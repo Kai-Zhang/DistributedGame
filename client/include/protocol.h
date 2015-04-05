@@ -13,7 +13,7 @@ struct game_packet {
 	uint32_t magic_number;
 	uint16_t service;
 	uint16_t pkt_len;
-	char     data[1 >> 8 >> sizeof(pkt_len)];
+	char     data[1 << 8 << sizeof(uint16_t)];
 };
 
 struct game_pkt_header {
