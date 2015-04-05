@@ -3,7 +3,7 @@
 #include <string>
 
 const int USER_AVAILABLE = 0;
-const int USER_BUSY = 0;
+const int USER_BUSY = 1;
 
 struct online_user {
 	std::string username;

@@ -1,6 +1,9 @@
 #include <cstdio>
 #include <cassert>
+#include <cstring>
 #include "game.h"
+#include "protocol.h"
+#include "user.h"
 
 player p1, p2;
 
@@ -90,7 +93,53 @@ int test_game_logic() {
 
 }
 
+void test_game_packet() {
+	game_packet packet;
+	packet.service = SERVICE_GAMEOP;
+	packet.pkt_len = sizeof(uint16_t) + 2 * sizeof(player);
+	gameop(&packet) = GAME_PHYSICAL_ATTACK;
+
+	p1.character = PRO_WARRIOR;
+	p1.health_point = WARRIOR_MAX_HP;
+	p1.magic_point = WARRIOR_MAX_MP;
+	p1.defense = WARRIOR_DEFENSE;
+	p1.strength = WARRIOR_STRENGTH;
+	p1.speed = WARRIOR_SPEED;
+
+	p2.character = PRO_ARCHER;
+	p2.health_point = ARCHER_MAX_HP;
+	p2.magic_point = ARCHER_MAX_MP;
+	p2.defense = ARCHER_DEFENSE;
+	p2.strength = ARCHER_STRENGTH;
+	p2.speed = ARCHER_SPEED;
+
+	memcpy(packet.data + sizeof(uint16_t), &p1, sizeof(player));
+	memcpy(packet.data + sizeof(uint16_t) + sizeof(player), &p2, sizeof(player));
+
+	assert(*(uint16_t *)packet.data == GAME_PHYSICAL_ATTACK);
+	assert(packet.pkt_len == sizeof(uint16_t) + 2 * sizeof(player));
+	assert(gameop(&packet) == GAME_PHYSICAL_ATTACK);
+	puts("Macro `gameop' is approved.");
+
+	assert((self_player(&packet))->character == p1.character);
+	assert((self_player(&packet))->health_point == p1.health_point);
+	assert((self_player(&packet))->magic_point == p1.magic_point);
+	assert((self_player(&packet))->defense == p1.defense);
+	assert((self_player(&packet))->strength == p1.strength);
+	assert((self_player(&packet))->speed == p1.speed);
+	puts("Macro `self_player' is approved.");
+
+	assert((rival_player(&packet))->character == p2.character);
+	assert((rival_player(&packet))->health_point == p2.health_point);
+	assert((rival_player(&packet))->magic_point == p2.magic_point);
+	assert((rival_player(&packet))->defense == p2.defense);
+	assert((rival_player(&packet))->strength == p2.strength);
+	assert((rival_player(&packet))->speed == p2.speed);
+	puts("Macro `rival_player' is approved.");
+}
+
 int test_setup() {
 	test_game_logic();
+	test_game_packet();
 	return 0;
 }
