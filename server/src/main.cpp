@@ -4,9 +4,9 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <thread>
+#include <pthread.h>
 
-void client_handle(int);
+void *client_handle(void *);
 int test_setup();
 
 int main(int argc, char *argv[]) {
@@ -41,8 +41,8 @@ int main(int argc, char *argv[]) {
 
 		printf("Client %s accepted. Socket #%d built.\n", inet_ntoa(remote_addr.sin_addr), clientfd);
 
-		std::thread handler(client_handle, clientfd);
-		handler.detach();
+		pthread_t handler;
+		pthread_create(&handler, NULL, client_handle, (void *)&clientfd);
 	}
 	close(serverfd);
 	return 0;

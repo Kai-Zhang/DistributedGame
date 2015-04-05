@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <cstring>
 #include <unistd.h>
+#include <pthread.h>
 
 #include "protocol.h"
 #include "functions.h"
@@ -14,7 +15,8 @@ struct online_user current_user;
 struct game_packet failure_packet;
 struct game_packet refuse_packet;
 
-void client_handle(int sockfd) {
+void *client_handle(void *sockfd_ptr) {
+	int sockfd = *(int *)sockfd_ptr;
 	char buffer[sizeof(struct game_packet)];
 	struct game_packet *packet = (struct game_packet *)buffer;
 	char *current_username = NULL;
@@ -26,7 +28,7 @@ void client_handle(int sockfd) {
 	if (recv_packet(sockfd, buffer) <= 0) {
 		close(sockfd);
 		printf("Socket #%d closed.\n", sockfd);
-		return;
+		pthread_exit((void *)0);
 	}
 
 	if (packet->service == SERVICE_LOGIN) {
@@ -44,7 +46,7 @@ void client_handle(int sockfd) {
 		switch (packet->service) {
 			case SERVICE_CHAT:
 				while(*user ++);
-				if (user - packet->data == packet->pkt_len) {
+				if (user - packet->data == packet->pkt_len + 1) {
 					broadcast(packet);
 				}
 				for (int i = 0; i < packet->pkt_len; i += NAME_SIZE) {
@@ -85,6 +87,7 @@ void client_handle(int sockfd) {
 	logout(current_username, sockfd);
 	close(sockfd);
 	printf("Socket #%d closed.\n", sockfd);
+	pthread_exit((void *)0);
 }
 
 void game_handle(struct game_packet *packet, int selfsock) {

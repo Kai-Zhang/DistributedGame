@@ -59,7 +59,12 @@ int send_packet(int sockfd, struct game_packet *packet) {
 }
 
 void send_to(char *username, struct game_packet *packet) {
-	send_packet(sockmap[username], packet);
+	if (username == NULL) {
+		broadcast(packet);
+	}
+	else {
+		send_packet(sockmap[username], packet);
+	}
 }
 
 void login(char *username, int fd) {
@@ -67,6 +72,13 @@ void login(char *username, int fd) {
 	sockmap.insert(pair<string, int>(username, fd));
 	struct game_packet packet;
 	packet.service = SERVICE_NAMELIST;
+	int count = 0;
+	for (list<struct online_user>::iterator iter = userlist.begin();
+			iter != userlist.end(); iter++) {
+		strncpy(packet.data + count * 32, iter->username.c_str(), NAME_SIZE);
+		count ++;
+	}
+	packet.pkt_len = count * 32;
 	send_to(NULL, &packet);
 }
 
@@ -75,6 +87,13 @@ void logout(char *username, int fd) {
 	userlist.remove({username, 0});
 	struct game_packet packet;
 	packet.service = SERVICE_NAMELIST;
+	int count = 0;
+	for (list<struct online_user>::iterator iter = userlist.begin();
+			iter != userlist.end(); iter++) {
+		strncpy(packet.data + count * 32, iter->username.c_str(), NAME_SIZE);
+		count ++;
+	}
+	packet.pkt_len = count * 32;
 	broadcast(&packet);
 }
 
