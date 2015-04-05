@@ -1,6 +1,5 @@
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <unistd.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -16,6 +15,8 @@ static int login = 0;
 //important tip : not decided yet will also make Gameon 1;
 static int Gameon = 0;
 static int Chatout = 0;
+
+
 
 char selfname[16];
 int setfor_for = 0;

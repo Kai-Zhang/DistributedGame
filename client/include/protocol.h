@@ -30,6 +30,8 @@ struct game_start_packet {
     char data2[16];
 };
 
+
+
 // A player is described by a 5-tuple
 struct player {
 	int character;		// Specify the character of the player
@@ -40,17 +42,18 @@ struct player {
 	int speed;			// Range from 0 to 100
 };
 
+
+struct game_create_packet {
+    int game_op;
+    int character;
+};
+
 struct game_op_packet {
     int game_op;
     struct player from;
     struct player to; 
 };
 
-
-struct game_create_packet {
-    int game_op;
-    int character;
-};
 
 
 
