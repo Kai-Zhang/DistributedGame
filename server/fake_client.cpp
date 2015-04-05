@@ -38,19 +38,19 @@ int main(int argc, char *argv[]) {
 		return 1;
 	}
 
+	const char *myname = "John";
 	struct game_packet packet;
 	packet.service = SERVICE_LOGIN;
 	packet.pkt_len = NAME_SIZE;
-	strncpy(packet.data, "John", NAME_SIZE);
+	strncpy(packet.data, myname, NAME_SIZE);
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_NAMELIST);
 	assert(packet.pkt_len == NAME_SIZE);
-	assert(!strcmp(packet.data, "John"));
+	assert(!strcmp(packet.data, myname));
 	puts("Login test approved.");
 
-	packet.magic_number = 0x55aa;
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
@@ -69,6 +69,96 @@ int main(int argc, char *argv[]) {
 	assert(packet.pkt_len == strlen(chat_msg));
 	assert(!strcmp(packet.data, chat_msg));
 	puts("Chat test approved.");
+
+	packet.service = SERVICE_GAMEREQUEST;
+	packet.pkt_len = 2 * NAME_SIZE;
+	strncpy(packet.data, myname, NAME_SIZE);
+	strncpy(packet.data + NAME_SIZE, myname, NAME_SIZE);
+	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	assert(recv(sockfd, &packet, sizeof(packet), 0));
+	assert(packet.magic_number == 0x55aa);
+	assert(packet.service == SERVICE_GAMEREQUEST);
+	assert(packet.pkt_len == 2 * NAME_SIZE);
+	assert(!strcmp(packet.data, myname));
+	assert(!strcmp(packet.data + NAME_SIZE, myname));
+	puts("Game request test approved.");
+
+	packet.service = SERVICE_GAMEON;
+	packet.pkt_len = 2 * NAME_SIZE;
+	strncpy(packet.data, myname, NAME_SIZE);
+	strncpy(packet.data + NAME_SIZE, myname, NAME_SIZE);
+	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	assert(recv(sockfd, &packet, sizeof(packet), 0));
+	assert(packet.magic_number == 0x55aa);
+	assert(packet.service == SERVICE_GAMEON);
+	assert(packet.pkt_len == 2 * NAME_SIZE);
+	assert(!strcmp(packet.data, myname));
+	assert(!strcmp(packet.data + NAME_SIZE, myname));
+	puts("Game on now.");
+
+	player p;
+	p.character = PRO_WARRIOR;
+	p.health_point = WARRIOR_MAX_HP;
+	p.magic_point = WARRIOR_MAX_MP;
+	p.defense = WARRIOR_DEFENSE;
+	p.strength = WARRIOR_STRENGTH;
+	p.speed = WARRIOR_SPEED;
+
+	packet.service = SERVICE_GAMEOP;
+	packet.pkt_len = sizeof(uint16_t) + sizeof(player);
+	gameop(&packet) = GAME_CHR_CREATE;
+	memcpy(self_player(&packet), &p, sizeof(player));
+	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	assert(recv(sockfd, &packet, sizeof(packet), 0));
+	assert(packet.magic_number == 0x55aa);
+	assert(packet.service == SERVICE_GAMEOP);
+	assert(gameop(&packet) == GAME_CHR_CREATE);
+	assert(packet.pkt_len == sizeof(uint16_t) + sizeof(player));
+	assert(!memcmp(self_player(&packet), &p, sizeof(player)));
+	puts("Character successfully create.");
+
+	packet.service = SERVICE_GAMEOP;
+	packet.pkt_len = sizeof(uint16_t) + sizeof(player);
+	gameop(&packet) = GAME_CHR_CREATE;
+	memcpy(self_player(&packet), &p, sizeof(player));
+	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	assert(recv(sockfd, &packet, sizeof(packet), 0));
+	assert(packet.magic_number == 0x55aa);
+	assert(packet.service == SERVICE_GAMEOP);
+	assert(gameop(&packet) == GAME_CHR_CREATE);
+	assert(packet.pkt_len == sizeof(uint16_t) + sizeof(player));
+	assert(!memcmp(self_player(&packet), &p, sizeof(player)));
+	puts("Rival's character successfully create.");
+
+	packet.service = SERVICE_GAMEOP;
+	packet.pkt_len = sizeof(uint16_t) + 2 * sizeof(player);
+	gameop(&packet) = GAME_PHYSICAL_ATTACK;
+	memcpy(self_player(&packet), &p, sizeof(player));
+	memcpy(rival_player(&packet), &p, sizeof(player));
+	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	assert(recv(sockfd, &packet, sizeof(packet), 0));
+	assert(packet.magic_number == 0x55aa);
+	assert(packet.service == SERVICE_GAMEOP);
+	assert(packet.pkt_len == sizeof(uint16_t) + 2 * sizeof(player));
+	assert(!memcmp(self_player(&packet), &p, sizeof(player)));
+	// Since game logic is tested. The test will not calculate again.
+	puts("Game is going well.");
+
+	packet.service = SERVICE_GAMEOP;
+	packet.pkt_len = sizeof(uint16_t) + 2 * sizeof(player);
+	gameop(&packet) = GAME_CONCEDE;
+	memcpy(self_player(&packet), &p, sizeof(player));
+	memcpy(rival_player(&packet), &p, sizeof(player));
+	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	assert(recv(sockfd, &packet, sizeof(packet), 0));
+	assert(packet.magic_number == 0x55aa);
+	assert(packet.service == SERVICE_GAMEOP);
+	assert(gameop(&packet) & GAME_WIN);
+	assert(packet.pkt_len == sizeof(uint16_t) + 2 * sizeof(player));
+	assert(!memcmp(self_player(&packet), &p, sizeof(player)));
+	puts("Concede okay.");
+
+	puts("All tests approved.");
 
 	close(sockfd);
 	return 0;
