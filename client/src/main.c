@@ -119,6 +119,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
 	            int sockfd=(int)conn;
 	            
                 while (recv(sockfd, recvline1, MAXLINE, 0) != 0) {
+                    printf("11111\n");
                     struct game_packet *packet = (struct game_packet *)recvline1;
 		            if(packet->magic_number == 0x55aa) {
                         if(packet->service == SERVICE_NAMELIST) {
@@ -142,8 +143,10 @@ void struct_gameop_print(struct game_op_packet *gameop) {
             }
             //2. chat and logout from local
             void *get2(void * conn){
+                printf("1111\n");
                 int sockfd=(int)conn;
                 while (fgets(sendline1, MAXLINE, stdin) != NULL) {
+                    printf("11\n");
                     if(sendline1[0] == 'c') {
                         Chatout = 1;
                         struct game_packet *packet = (struct game_packet *)sendline1;
@@ -186,6 +189,8 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                         send(sockfd, packet, packet->pkt_len + 8, 0);
                         printf("you have logged out\n");
                         login = 0;
+                        printf("Please log in(started with '#' or the name will not be accepted)");
+
                         pthread_exit((void *)0);
                         break;
                     }   
@@ -474,16 +479,16 @@ int main(int argc, char *argv[]) {
 	while (fgets(sendline, MAXLINE, stdin) != NULL) {
 	        //log in
             if (sendline[0] == '#') {
-                struct game_packet *packet;
-                packet->magic_number = 0x55aa;
-                packet->service = SERVICE_LOGIN;
-                packet->pkt_len = strlen(sendline)-1;
-                for(setfor_for = 0; setfor_for < packet->pkt_len; setfor_for++) {
-                    packet->data[setfor_for] = sendline[setfor_for + 1];
+                struct game_packet packet;
+                packet.magic_number = 0x55aa;
+                packet.service = SERVICE_LOGIN;
+                packet.pkt_len = strlen(sendline)-2;
+                for(setfor_for = 0; setfor_for < packet.pkt_len; setfor_for++) {
+                    packet.data[setfor_for] = sendline[setfor_for + 1];
                     selfname[setfor_for] = sendline[setfor_for + 1];
                 }
-                send(sockfd, packet, packet->pkt_len + 8, 0);
-                printf("you have logged in and your name is%s\n",selfname);
+                send(sockfd, &packet, packet.pkt_len + 8, 0);
+                printf("you have logged in and your name is %s\n",selfname);
                 
                 printf("you have several choice : 1.R means request to sb then you should type in a name\n");
                 printf("                          2.C+words+#+name means chats to sb with these words\n");
