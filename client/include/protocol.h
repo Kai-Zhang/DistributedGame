@@ -46,6 +46,11 @@ struct player {
 struct game_create_packet {
     int game_op;
     int character;
+	int health_point;
+	int magic_point;
+	int defense;
+	int strength;
+	int speed;
 };
 
 struct game_op_packet {

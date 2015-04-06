@@ -82,7 +82,7 @@ void *client_handle(void *sockfd_ptr) {
 		}
 	}
 
-	if (!current_username) {
+	if (current_username) {
 		logout(current_username, sockfd);
 	}
 	close(sockfd);

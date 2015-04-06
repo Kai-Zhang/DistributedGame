@@ -21,4 +21,4 @@ run:
 	./$(MAIN) $(SERVIP) $(PORT)
 
 gdb:
-	-@gdb ./$(MAIN) $(SERVIP) $(PORT)
+	-@gdb --args ./$(MAIN) $(SERVIP) $(PORT)
