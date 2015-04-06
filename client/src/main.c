@@ -292,6 +292,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              if((packet->service == 0x04) && (status != 0)) {
                  char *a = packet->data;
                  int i;
+                 printf("new namelist:\n");
                  for(i = 0; i < packet->pkt_len; i += 32)
                  printf("%s\n", (a+i));
              }
@@ -389,6 +390,16 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                  status = 9;
                  struct game_op_packet *gameop = (struct game_op_packet *)packet->data;
 		         struct_gameop_print(gameop);
+		 self.health_point = gameop->to.health_point;
+		 dest.health_point = gameop->from.health_point;
+		 self.magic_point  = gameop->to.magic_point;
+		 dest.magic_point  = gameop->from.magic_point;
+		 self.defense      = gameop->to.defense;
+		 dest.defense      = gameop->from.defense;
+		 self.strength     = gameop->to.strength;
+		 dest.strength     = gameop->from.strength;
+		 self.speed        = gameop->to.speed;
+		 dest.speed        = gameop->from.speed;
                  printf(" you need to decide what you will do now :\n");
 		         printf("p :physical attack\nm :magical attack\nf : give up\n");
              }
