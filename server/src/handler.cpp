@@ -25,12 +25,6 @@ void *client_handle(void *sockfd_ptr) {
 	refuse_packet.service = SERVICE_GAMEREFUSE;
 	refuse_packet.pkt_len = 32;
 
-	if (recv_packet(sockfd, buffer) <= 0) {
-		close(sockfd);
-		printf("Socket #%d closed.\n", sockfd);
-		pthread_exit((void *)0);
-	}
-
 	while (true) {
 		if (recv_packet(sockfd, buffer) <= 0) {
 			break;

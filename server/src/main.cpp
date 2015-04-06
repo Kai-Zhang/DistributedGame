@@ -9,6 +9,8 @@
 void *client_handle(void *);
 int test_setup();
 
+extern pthread_mutex_t user_mutex;
+
 int main(int argc, char *argv[]) {
 	if (argc != 2) {
 		puts("Usage: server [port]");
@@ -19,6 +21,8 @@ int main(int argc, char *argv[]) {
 	server_addr.sin_family = AF_INET;
 	server_addr.sin_addr.s_addr = INADDR_ANY;
 	server_addr.sin_port = htons(atoi(argv[1]));
+	const int on = 1;
+	setsockopt(serverfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 
 	if ((serverfd = socket(PF_INET, SOCK_STREAM, 0)) < 0) {
 		perror("Server socket open failed!\n");
@@ -30,6 +34,7 @@ int main(int argc, char *argv[]) {
 	}
 
 	puts("Server is running!");
+	pthread_mutex_init(&user_mutex, NULL);
 	socklen_t sin_size = sizeof(struct sockaddr_in);
 	while (1) {
 		listen(serverfd, 10);
@@ -44,6 +49,7 @@ int main(int argc, char *argv[]) {
 		pthread_t handler;
 		pthread_create(&handler, NULL, client_handle, (void *)&clientfd);
 	}
+	pthread_mutex_destroy(&user_mutex);
 	close(serverfd);
 	return 0;
 }
