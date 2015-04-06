@@ -26,8 +26,8 @@ struct game_start_packet {
     uint32_t magic_number;
     uint16_t service;
     uint16_t pkt_len;
-    char data1[16];
-    char data2[16];
+    char data1[32];
+    char data2[32];
 };
 
 
@@ -69,7 +69,7 @@ const int NAME_SIZE = 32;
 const uint16_t SERVICE_LOGIN		= 0x01;
 const uint16_t SERVICE_LOGOUT		= 0x02;
 const uint16_t SERVICE_NAMELIST		= 0x04;
-const uint16_t SERVICE_CHAT		= 0x08;
+const uint16_t SERVICE_CHAT		    = 0x08;
 const uint16_t SERVICE_GAMEREQUEST	= 0x10;
 const uint16_t SERVICE_GAMEON		= 0x11;
 const uint16_t SERVICE_GAMEREFUSE	= 0x12;

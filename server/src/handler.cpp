@@ -61,7 +61,7 @@ void *client_handle(void *sockfd_ptr) {
 				current_user.rivalsock = get_user_sock(packet->data);
 				send_to(packet->data, packet);
 				break;
-			case SERVICE_GAMEOP:
+			case SERVICE_GAMEOP:printf("111");
 				if (current_user.rivalsock == -1) {
 					send_packet(sockfd, &failure_packet);
 				} else if (gameop(packet) == GAME_CHR_CREATE) {

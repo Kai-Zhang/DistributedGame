@@ -7,13 +7,14 @@
 #include <string.h>
 #include <pthread.h>
 #include <protocol.h>
-#include <character.h>
+#include <character.h> 
+#include <unistd.h>
 
 #define MAXLINE 128
 
 static int status; 
-char selfname[16];
-char destname[16];
+char selfname[32];
+char destname[32];
 int setfor_for = 0;
 char sendline[MAXLINE],recvline[MAXLINE],recvdata[MAXLINE],senddata[MAXLINE];
 struct player self,dest;
@@ -175,10 +176,11 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              struct game_start_packet packet;
              packet.magic_number = 0x55aa;
              packet.service = 0x10;
-             packet.pkt_len = 32;
-             fgets(packet.data1, 16, stdin);
+             packet.pkt_len = 64;
+             fgets(packet.data1, 32, stdin);
              strcpy(packet.data2,selfname);
-             send(sockfd, &packet, 40, 0);
+             send(sockfd, &packet, 72, 0);
+             printf("wait the reply\n");
          }
          //to be warrior
          else if((sendline[0] == 'w') && ((status == 6) || (status == 5))) {
@@ -186,7 +188,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              struct game_packet a;
              a.magic_number = 0x55aa;
              a.service = 0x18;
-             a.pkt_len = 14;
+             a.pkt_len = 26;
              struct game_create_packet *gcpacket = (struct game_create_packet *)a.data;
              gcpacket->game_op = GAME_CHR_CREATE;
              gcpacket->character = PRO_WARRIOR;
@@ -201,7 +203,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              self.defense = WARRIOR_DEFENSE;
              self.strength = WARRIOR_STRENGTH;
              self.speed = WARRIOR_SPEED;
-             send(sockfd, &a, 22, 0);
+             send(sockfd, &a, 34, 0);
              status += 2;
          }
          //to be magician
@@ -210,7 +212,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              struct game_packet a;
              a.magic_number = 0x55aa;
              a.service = SERVICE_GAMEOP;
-             a.pkt_len = 14;
+             a.pkt_len = 26;
              struct game_create_packet *gcpacket = (struct game_create_packet *)a.data;
              gcpacket->game_op = GAME_CHR_CREATE;
              gcpacket->character = PRO_MAGICIAN;
@@ -225,7 +227,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              self.defense = MAGICIAN_DEFENSE;
              self.strength = MAGICIAN_STRENGTH;
              self.speed = MAGICIAN_SPEED;
-             send(sockfd, &a, 22, 0);
+             send(sockfd, &a, 34, 0);
              status += 2;
          }
          //to be archer
@@ -234,7 +236,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              struct game_packet a;
              a.magic_number = 0x55aa;
              a.service = SERVICE_GAMEOP;
-             a.pkt_len = 14;
+             a.pkt_len = 26;
              struct game_create_packet *gcpacket = (struct game_create_packet *)a.data;
              gcpacket->game_op = GAME_CHR_CREATE;
              gcpacket->character = PRO_ARCHER;
@@ -249,14 +251,14 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              self.defense = ARCHER_DEFENSE;
              self.strength = ARCHER_STRENGTH;
              self.speed = ARCHER_SPEED;
-             send(sockfd, &a, 22, 0);
+             send(sockfd, &a, 34, 0);
              status += 2;
          }
          //give up or physical and magical attack
          else if(((sendline[0] == 'f') || (sendline[0] == 'p') || (sendline[0] == 'm')) && (status == 9)){
              struct game_packet a;
 	         a.magic_number = 0x55aa;
-	         a.pkt_len = 14;
+	         a.pkt_len = 50;
 	         a.service = SERVICE_GAMEOP;
 	         struct game_op_packet *gameop2 = (struct game_op_packet *)a.data;
 		     switch (sendline[0]) {
@@ -277,7 +279,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
 		     gameop2->to.defense        = dest.defense;
 		     gameop2->to.strength       = dest.strength;
 		     gameop2->to.speed          = dest.speed;
-		     send(sockfd, &a, 22, 0);
+		     send(sockfd, &a, 58, 0);
          }
          //send game on
          else if((sendline[0] == 'y') && (status == 3)) {
@@ -285,10 +287,10 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              struct game_start_packet b;
              b.magic_number = 0x55aa;
              b.service = 0x11;
-             b.pkt_len = 32;
+             b.pkt_len = 64;
              strcpy(b.data1, destname);
              strcpy(b.data2, selfname);
-             send(sockfd, &b, 40, 0);
+             send(sockfd, &b, 72, 0);
          }
          //send refuse
          else if((sendline[0] == 'n') && (status == 3)) {
@@ -296,10 +298,10 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              struct game_start_packet b;
              b.magic_number = 0x55aa;
              b.service = 0x12;
-             b.pkt_len = 32;
+             b.pkt_len = 64;
              strcpy(b.data1, destname);
              strcpy(b.data2, selfname);
-             send(sockfd, &b, 40, 0);
+             send(sockfd, &b, 72, 0);
          }
      }
  }
@@ -307,11 +309,15 @@ void struct_gameop_print(struct game_op_packet *gameop) {
  void *get1(void *conn){
      int sockfd=*(int*)conn;
      while (recv(sockfd, recvline, MAXLINE, 0) != 0) {
+         usleep(100);	
          struct game_packet *packet = (struct game_packet *)recvline;
          if(packet->magic_number == 0x55aa) {
              //receive name list
              if((packet->service == 0x04) && (status != 0)) {
-                 printf("new user :%s", packet->data);
+                 char *a = packet->data;
+                 int i;
+                 for(i = 0; i < packet->pkt_len; i += 32)
+                 printf("%s", (a+i));
              }
              //receive chat
              else if(packet->service == 0x08) {
@@ -323,11 +329,11 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                  struct game_start_packet *b = (struct game_start_packet *)recvline;
                  printf("if you want to play game with %s please type in a 'y' or you should type in an 'n'\n",b->data2);
                  strcpy(destname, b->data2); 
-                 strcpy(selfname, b->data1);   
+                 strcpy(selfname, b->data1);
              }
              //receive game on and tell users to choose character
-             else if((packet->service == 0x11) && (status == 2)) {
-                 printf("you can choose warrior,magician or archer by 'w','m' or 'a'.");
+             else if( (packet->service == 0x11) && (status == 2)) {
+                 printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
                  status = 5;
              }
              //receive sad story
@@ -336,7 +342,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                  status = 1;
              }
              //receive game create
-             else if((packet->service == 0x18) && ((status == 4)||(status == 7)) && (packet->pkt_len = 14)) {
+             else if((packet->service == 0x18) && ((status == 4)||(status == 7)) && (packet->pkt_len = 26)) {
                  struct game_create_packet *e = (struct game_create_packet *)packet->data;
                  if(e->game_op == GAME_CHR_CREATE) {
                      if(e->character == 0x1) {
@@ -347,6 +353,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                          }
                          if(status == 4) {
                              status == 6;
+                             printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
                          }
                          dest.character = PRO_WARRIOR;
                          dest.health_point = WARRIOR_MAX_HP;
@@ -363,6 +370,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                          }
                          if(status == 4) {
                              status == 6;
+                             printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
                          }
                          dest.character = PRO_MAGICIAN;
                          dest.health_point = MAGICIAN_MAX_HP;
@@ -379,6 +387,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                          }
                          if(status == 4) {
                              status == 6;
+                             printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
                          }
                          dest.character = PRO_ARCHER;
                          dest.health_point = ARCHER_MAX_HP;
@@ -390,7 +399,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                  }
              }
              //receive game op
-             else if((packet->service == 0x18) && ((status == 8)||(status == 10)) && (packet->pkt_len = 26)){
+             else if((packet->service == 0x18) && ((status == 8)||(status == 10)) && (packet->pkt_len = 50)){
                  status = 9;
                  struct game_op_packet *gameop = (struct game_op_packet *)packet->data;
 		         struct_gameop_print(gameop);
@@ -439,7 +448,7 @@ int main(int argc, char *argv[]) {
         pthread_t threads[2];
 		pthread_create(&threads[0],NULL,get0,(void *)&sockfd);
 		pthread_create(&threads[1],NULL,get1,(void *)&sockfd);
-		
+		printf("Please log in(started with '#' or the name will not be accepted)\n");
 		while(1);
        
 	close(sockfd);
