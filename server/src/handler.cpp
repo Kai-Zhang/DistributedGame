@@ -82,7 +82,9 @@ void *client_handle(void *sockfd_ptr) {
 		}
 	}
 
-	logout(current_username, sockfd);
+	if (!current_username) {
+		logout(current_username, sockfd);
+	}
 	close(sockfd);
 	printf("Socket #%d closed.\n", sockfd);
 	pthread_exit((void *)0);
