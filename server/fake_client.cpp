@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 	packet.pkt_len = NAME_SIZE;
 	strncpy(packet.data, myname, NAME_SIZE);
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_NAMELIST);
@@ -52,6 +53,7 @@ int main(int argc, char *argv[]) {
 	puts("Login test approved.");
 
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_FAILED);
@@ -63,6 +65,7 @@ int main(int argc, char *argv[]) {
 	packet.pkt_len = strlen(chat_msg);
 	strncpy(packet.data, chat_msg, NAME_SIZE);
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_CHAT);
@@ -75,6 +78,7 @@ int main(int argc, char *argv[]) {
 	strncpy(packet.data, myname, NAME_SIZE);
 	strncpy(packet.data + NAME_SIZE, myname, NAME_SIZE);
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_GAMEREQUEST);
@@ -88,6 +92,7 @@ int main(int argc, char *argv[]) {
 	strncpy(packet.data, myname, NAME_SIZE);
 	strncpy(packet.data + NAME_SIZE, myname, NAME_SIZE);
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_GAMEON);
@@ -109,6 +114,7 @@ int main(int argc, char *argv[]) {
 	gameop(&packet) = GAME_CHR_CREATE;
 	memcpy(self_player(&packet), &p, sizeof(player));
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_GAMEOP);
@@ -122,6 +128,7 @@ int main(int argc, char *argv[]) {
 	gameop(&packet) = GAME_CHR_CREATE;
 	memcpy(self_player(&packet), &p, sizeof(player));
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_GAMEOP);
@@ -136,6 +143,7 @@ int main(int argc, char *argv[]) {
 	memcpy(self_player(&packet), &p, sizeof(player));
 	memcpy(rival_player(&packet), &p, sizeof(player));
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_GAMEOP);
@@ -150,6 +158,7 @@ int main(int argc, char *argv[]) {
 	memcpy(self_player(&packet), &p, sizeof(player));
 	memcpy(rival_player(&packet), &p, sizeof(player));
 	send(sockfd, &packet, sizeof(game_pkt_header) + packet.pkt_len, 0);
+	memset(&packet, 0, sizeof(packet));
 	assert(recv(sockfd, &packet, sizeof(packet), 0));
 	assert(packet.magic_number == 0x55aa);
 	assert(packet.service == SERVICE_GAMEOP);

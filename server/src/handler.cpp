@@ -31,18 +31,15 @@ void *client_handle(void *sockfd_ptr) {
 		pthread_exit((void *)0);
 	}
 
-	if (packet->service == SERVICE_LOGIN) {
-		current_user.username = packet->data;
-		current_username = (char *)current_user.username.c_str();
-		login(packet->data, sockfd);
-	}
-
 	while (true) {
 		if (recv_packet(sockfd, buffer) <= 0) {
 			break;
 		}
 
 		char *user = packet->data;
+		if (current_username == NULL && packet->service != SERVICE_LOGIN) {
+			send_packet(sockfd, &failure_packet);
+		}
 		switch (packet->service) {
 			case SERVICE_CHAT:
 				while(*user ++);
@@ -79,6 +76,13 @@ void *client_handle(void *sockfd_ptr) {
 					game_handle(packet, sockfd);
 				}
 				break;
+			case SERVICE_LOGOUT:
+				logout(current_username, sockfd);
+				current_username = NULL;
+			case SERVICE_LOGIN:
+				current_user.username = packet->data;
+				current_username = (char *)current_user.username.c_str();
+				login(packet->data, sockfd);
 			default:
 				send_packet(sockfd, &failure_packet);
 		}
