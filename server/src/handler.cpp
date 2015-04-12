@@ -8,9 +8,7 @@
 #include "game.h"
 #include "user.h"
 
-void game_handle(struct game_packet *, int);
-
-struct online_user current_user;
+void game_handle(struct game_packet *, struct online_user *, int);
 
 struct game_packet failure_packet;
 struct game_packet refuse_packet;
@@ -20,6 +18,8 @@ void *client_handle(void *sockfd_ptr) {
 	char buffer[sizeof(struct game_packet)];
 	struct game_packet *packet = (struct game_packet *)buffer;
 	char *current_username = NULL;
+	struct online_user current_user;
+
 	failure_packet.service = SERVICE_FAILED;
 	failure_packet.pkt_len = 0;
 	refuse_packet.service = SERVICE_GAMEREFUSE;
@@ -45,8 +45,9 @@ void *client_handle(void *sockfd_ptr) {
 				}
 				break;
 			case SERVICE_GAMEREQUEST:
-				if (get_user_status(current_username) == USER_AVAILABLE) {
+				if (get_user_status(packet->data) == USER_AVAILABLE) {
 					send_to(packet->data, packet);
+					set_user_status(packet->data, USER_BUSY);
 					set_user_status(current_username, USER_BUSY);
 				} else {
 					strncpy(refuse_packet.data, current_username, NAME_SIZE);
@@ -61,22 +62,24 @@ void *client_handle(void *sockfd_ptr) {
 				current_user.rivalsock = get_user_sock(packet->data);
 				send_to(packet->data, packet);
 				break;
-			case SERVICE_GAMEOP:printf("111");
+			case SERVICE_GAMEOP:
 				if (current_user.rivalsock == -1) {
 					send_packet(sockfd, &failure_packet);
 				} else if (gameop(packet) == GAME_CHR_CREATE) {
 					send_packet(current_user.rivalsock, packet);
 				} else {
-					game_handle(packet, sockfd);
+					game_handle(packet, &current_user, sockfd);
 				}
 				break;
 			case SERVICE_LOGOUT:
 				logout(current_username, sockfd);
 				current_username = NULL;
+				break;
 			case SERVICE_LOGIN:
 				current_user.username = packet->data;
 				current_username = (char *)current_user.username.c_str();
 				login(packet->data, sockfd);
+				break;
 			default:
 				send_packet(sockfd, &failure_packet);
 		}
@@ -90,7 +93,7 @@ void *client_handle(void *sockfd_ptr) {
 	pthread_exit((void *)0);
 }
 
-void game_handle(struct game_packet *packet, int selfsock) {
+void game_handle(struct game_packet *packet, struct online_user *current_user, int selfsock) {
 	struct player *self = self_player(packet);
 	struct player *rival = rival_player(packet);
 	struct game_packet return_packet;
@@ -99,37 +102,37 @@ void game_handle(struct game_packet *packet, int selfsock) {
 		case GAME_PHYSICAL_ATTACK:
 			attack_result = physical_attack(*self, *rival);
 			gameop(packet) |= attack_result;
-			send_packet(selfsock, packet);
 			if (attack_result & EFFECT_SETTLED) {
 				memcpy(&return_packet, packet, sizeof(struct game_packet));
-				gameop(&return_packet) |= GAME_LOSE;
-				send_packet(current_user.rivalsock, &return_packet);
-				current_user.status = USER_AVAILABLE;
-				current_user.rivalsock = -1;
+				gameop(packet) |= GAME_LOSE;
+				send_packet(selfsock, &return_packet);
+				current_user->status = USER_AVAILABLE;
+				current_user->rivalsock = -1;
 			}
+			send_packet(current_user->rivalsock, packet);
 			break;
 		case GAME_MAGICAL_ATTACK:
 			attack_result = magical_attack(*self, *rival);
 			gameop(packet) |= attack_result;
-			send_packet(selfsock, packet);
 			if (attack_result & EFFECT_SETTLED) {
 				memcpy(&return_packet, packet, sizeof(struct game_packet));
 				gameop(&return_packet) |= GAME_LOSE;
-				send_packet(current_user.rivalsock, &return_packet);
-				current_user.status = USER_AVAILABLE;
-				current_user.rivalsock = -1;
+				send_packet(selfsock, &return_packet);
+				current_user->status = USER_AVAILABLE;
+				current_user->rivalsock = -1;
 			}
+			send_packet(current_user->rivalsock, packet);
 			break;
 		case GAME_RETREAT:
-			send_packet(current_user.rivalsock, packet);
-			current_user.status = USER_AVAILABLE;
-			current_user.rivalsock = -1;
+			send_packet(current_user->rivalsock, packet);
+			current_user->status = USER_AVAILABLE;
+			current_user->rivalsock = -1;
 			break;
 		case GAME_CONCEDE:
 			gameop(packet) |= GAME_WIN;
-			send_packet(current_user.rivalsock, packet);
-			current_user.status = USER_AVAILABLE;
-			current_user.rivalsock = -1;
+			send_packet(current_user->rivalsock, packet);
+			current_user->status = USER_AVAILABLE;
+			current_user->rivalsock = -1;
 			break;
 		default:
 			send_packet(selfsock, &failure_packet);

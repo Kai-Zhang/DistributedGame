@@ -1,4 +1,3 @@
-
 #include <stdio.h>
 #include <unistd.h>
 #include <sys/socket.h>
@@ -116,7 +115,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                   struct game_packet packet;
                   packet.magic_number = 0x55aa;
                   packet.service = 0x01;
-                  packet.pkt_len = strlen(sendline)-1;
+                  packet.pkt_len = strlen(sendline)-2;
                   for(setfor_for = 0; setfor_for < packet.pkt_len; setfor_for++) {
                       packet.data[setfor_for] = sendline[setfor_for + 1];
                       selfname[setfor_for] = sendline[setfor_for + 1];
@@ -147,7 +146,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              struct game_packet packet;
              packet.magic_number = 0x55aa;
              packet.service = 0x08;
-             packet.pkt_len = strlen(sendline) - 1;
+             packet.pkt_len = strlen(sendline) - 2;
              for(setfor_for = 0; setfor_for < packet.pkt_len; setfor_for++) {
                  if(sendline[setfor_for + 1] == '#') {
                      packet.data[setfor_for] = '\0';
@@ -178,6 +177,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              packet.service = 0x10;
              packet.pkt_len = 64;
              fgets(packet.data1, 32, stdin);
+			 packet.data1[strlen(packet.data1)-1] = 0;
              strcpy(packet.data2,selfname);
              send(sockfd, &packet, 72, 0);
              printf("wait the reply\n");
@@ -309,7 +309,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
  void *get1(void *conn){
      int sockfd=*(int*)conn;
      while (recv(sockfd, recvline, MAXLINE, 0) != 0) {
-         usleep(100);	
+         //usleep(100);	
          struct game_packet *packet = (struct game_packet *)recvline;
          if(packet->magic_number == 0x55aa) {
              //receive name list
@@ -317,7 +317,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                  char *a = packet->data;
                  int i;
                  for(i = 0; i < packet->pkt_len; i += 32)
-                 printf("%s", (a+i));
+                 printf("%s\n", (a+i));
              }
              //receive chat
              else if(packet->service == 0x08) {
@@ -326,14 +326,24 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              //receive game request
              else if((packet->service == 0x10) && (status == 1)) {
                  status = 3;
-                 struct game_start_packet *b = (struct game_start_packet *)recvline;
+				 struct game_start_packet *b = (struct game_start_packet *)recvline;
                  printf("if you want to play game with %s please type in a 'y' or you should type in an 'n'\n",b->data2);
-                 strcpy(destname, b->data2); 
-                 strcpy(selfname, b->data1);
+				 strcpy(destname, b->data2);
+				 strcpy(selfname, b->data1);
              }
              //receive game on and tell users to choose character
              else if( (packet->service == 0x11) && (status == 2)) {
-                 printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
+                 printf("you can choose warrior,magician or archer by'w','m' or 'a'.\n");
+				 struct game_start_packet b;
+				 struct game_start_packet *m = (struct game_start_packet *)recvline;
+				 puts(m->data1);
+				 puts(m->data2);
+            	 b.magic_number = 0x55aa;
+            	 b.service = 0x11;
+            	 b.pkt_len = 64;
+            	 strcpy(b.data1, m->data2);
+            	 strcpy(b.data2, m->data1);
+            	 send(sockfd, &b, 72, 0);
                  status = 5;
              }
              //receive sad story
@@ -347,12 +357,12 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                  if(e->game_op == GAME_CHR_CREATE) {
                      if(e->character == 0x1) {
                          if(status == 7) {
-                             status == 9;
+                             status = 9;
                              printf(" you need to decide what you will do now :\n");
 		                     printf("p :physical attack\nm :magical attack\nf : give up\n");
                          }
                          if(status == 4) {
-                             status == 6;
+                             status = 6;
                              printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
                          }
                          dest.character = PRO_WARRIOR;
@@ -364,12 +374,12 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                      }
                      if(e->character == 0x2) {
                          if(status == 7) {
-                             status == 9;
+                             status = 9;
                              printf(" you need to decide what you will do now :\n");
 		                     printf("p :physical attack\nm :magical attack\nf : give up\n");
                          }
                          if(status == 4) {
-                             status == 6;
+                             status = 6;
                              printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
                          }
                          dest.character = PRO_MAGICIAN;
@@ -381,12 +391,12 @@ void struct_gameop_print(struct game_op_packet *gameop) {
                      }
                      if(e->character == 0x3) {
                          if(status == 7) {
-                             status == 9;
+                             status = 9;
                              printf(" you need to decide what you will do now :\n");
 		                     printf("p :physical attack\nm :magical attack\nf : give up\n");
                          }
                          if(status == 4) {
-                             status == 6;
+                             status = 6;
                              printf("you can choose warrior,magician or archer by 'w','m' or 'a'.\n");
                          }
                          dest.character = PRO_ARCHER;
@@ -408,11 +418,11 @@ void struct_gameop_print(struct game_op_packet *gameop) {
              }
              
              else if(packet->service == 0x80){
-                 status == 1;
+                 status = 1;
                  printf("you have won\nnow you can launch a new request\n");
              }
              else if(packet->service == 0xc0){
-                 status == 1;
+                 status = 1;
                  printf("you have lost\nnow you can launch a new request\n");
              }
          }

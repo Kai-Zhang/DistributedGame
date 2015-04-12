@@ -47,7 +47,7 @@ bool set_user_status(char *username, int status) {
 	return false;
 }
 
-void broadcast(struct game_packet *packet) {
+int broadcast(struct game_packet *packet) {
 	pthread_mutex_lock(&user_mutex);
 	list<struct online_user>::iterator iter = userlist.begin();
 	if (packet->service == SERVICE_NAMELIST) {
@@ -61,6 +61,7 @@ void broadcast(struct game_packet *packet) {
 		send_packet(sockmap[(iter->username)], packet);
 	}
 	pthread_mutex_unlock(&user_mutex);
+	return sizeof(struct game_pkt_hdr) + packet->pkt_len;
 }
 
 int send_packet(int sockfd, struct game_packet *packet) {
@@ -68,13 +69,14 @@ int send_packet(int sockfd, struct game_packet *packet) {
 	return send(sockfd, packet, len, 0);
 }
 
-void send_to(char *username, struct game_packet *packet) {
+int send_to(char *username, struct game_packet *packet) {
 	if (username == NULL) {
-		broadcast(packet);
+		return broadcast(packet);
 	}
-	else {
-		send_packet(sockmap[username], packet);
+	if (!sockmap.count(username)) {
+		return -1;
 	}
+	return send_packet(sockmap[username], packet);
 }
 
 void login(char *username, int fd) {
@@ -108,6 +110,7 @@ void logout(char *username, int fd) {
 	for (list<struct online_user>::iterator iter = userlist.begin();
 			iter != userlist.end(); iter++) {
 		strncpy(packet.data + count * 32, iter->username.c_str(), NAME_SIZE);
+		cout << iter->username << endl;
 		count ++;
 	}
 	pthread_mutex_unlock(&user_mutex);
