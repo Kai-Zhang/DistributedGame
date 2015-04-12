@@ -61,7 +61,7 @@ int broadcast(struct game_packet *packet) {
 		send_packet(sockmap[(iter->username)], packet);
 	}
 	pthread_mutex_unlock(&user_mutex);
-	return sizeof(struct game_pkt_hdr) + packet->pkt_len;
+	return sizeof(struct game_pkt_header) + packet->pkt_len;
 }
 
 int send_packet(int sockfd, struct game_packet *packet) {
@@ -110,7 +110,6 @@ void logout(char *username, int fd) {
 	for (list<struct online_user>::iterator iter = userlist.begin();
 			iter != userlist.end(); iter++) {
 		strncpy(packet.data + count * 32, iter->username.c_str(), NAME_SIZE);
-		cout << iter->username << endl;
 		count ++;
 	}
 	pthread_mutex_unlock(&user_mutex);

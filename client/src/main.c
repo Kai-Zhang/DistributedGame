@@ -50,57 +50,33 @@ void struct_player_print(struct player a){
 
 //print gameop and two players
 void struct_gameop_print(struct game_op_packet *gameop) {
-    switch (gameop->game_op) {
-		case 0x01: {
-		    printf("physical attack !\nFrom:\n");
-		    struct_player_print(gameop->from);
-		    printf("to:\n");
-		    struct_player_print(gameop->to);
-		    break;
-		    };
-		case 0x02: {
-		    printf("magical attack !\nFrom:\n");
-		    struct_player_print(gameop->from);
-		    printf("to:\n");
-		    struct_player_print(gameop->to);
-		    break;
-		    };
-		case 0x04: {
-		    printf("attact miss !\nFrom:\n");
-		    struct_player_print(gameop->from);
-		    printf("to:\n");
-		    struct_player_print(gameop->to);
-		    break;
-		    };
-		case 0x08: {
-		    printf("physical attack !\nFrom:\n");
-		    struct_player_print(gameop->from);
-		    printf("to:\n");
-		    struct_player_print(gameop->to);
-		    break;
-		    };
-		case 0x10: {
-		    printf("retreat !\nFrom:\n");
-		    struct_player_print(gameop->from);
-		    printf("to:\n");
-		    struct_player_print(gameop->to);
-		    break;
-		    };
-		case 0x11: {
-		    printf("concede !\nFrom:\n");
-		    struct_player_print(gameop->from);
-		    printf("to:\n");
-		    struct_player_print(gameop->to);
-		    break;
-		    };
-		case 0x80: {
-		    printf("you have won !\n");
-		    break;
-		    };
-		case 0xc0: {
-		    printf("you have lost !\n");
-		    break;
-		    };
+	if (gameop->game_op & 0x01) {
+		printf("physical attack !\n");
+	}
+	else if (gameop->game_op & 0x02) {
+		printf("magical attack !\n");
+	}
+	if (gameop->game_op & 0x04) {
+		printf("attact miss !\n");
+	}
+	if (gameop->game_op & 0x08) {
+		printf("critical attack !\n");
+	}
+	if (gameop->game_op & 0x11) {
+		printf("concede !\n");
+	}
+	else if (gameop->game_op & 0x10) {
+		printf("retreat !\n");
+	}
+	puts("From");
+	struct_player_print(gameop->from);
+	printf("to:\n");
+	struct_player_print(gameop->to);
+	if (gameop->game_op & 0xc0) {
+		printf("you have lost !\n");
+    }
+	else if (gameop->game_op & 0x80) {
+	    printf("you have won !\n");
 	}
 }
 
@@ -417,14 +393,15 @@ void struct_gameop_print(struct game_op_packet *gameop) {
 		         printf("p :physical attack\nm :magical attack\nf : give up\n");
              }
              
-             else if(packet->service == 0x80){
+             /*else if(packet->service & 0x80){
                  status = 1;
-                 printf("you have won\nnow you can launch a new request\n");
-             }
-             else if(packet->service == 0xc0){
-                 status = 1;
-                 printf("you have lost\nnow you can launch a new request\n");
-             }
+				 if (packet->service & 0xc0) {
+			        printf("you have lost\nnow you can launch a new request\n");
+				 }
+				 else {
+					 printf("you have won\nnow you can launch a new request\n");
+				 }
+             }*/
          }
      }               
  }
