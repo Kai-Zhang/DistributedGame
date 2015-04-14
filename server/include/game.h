@@ -3,8 +3,8 @@
 #include "character.h"
 
 #define gameop(x) (*(uint16_t *)((x)->data))
-#define self_player(x) ((struct player *)((x)->data + sizeof(uint16_t)))
-#define rival_player(x) ((struct player *)((x)->data + sizeof(uint16_t) + sizeof(struct player)))
+#define self_player(x) ((struct player *)((x)->data + sizeof(uint32_t)))
+#define rival_player(x) ((struct player *)((x)->data + sizeof(uint32_t) + sizeof(struct player)))
 
 const int EFFECT_NOTHING        = 0x00;
 const int EFFECT_SETTLED        = 0x80;

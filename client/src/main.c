@@ -240,7 +240,7 @@ void struct_gameop_print(struct game_op_packet *gameop) {
 		     switch (sendline[0]) {
 		         case 'p':gameop2->game_op = 0x01;status = 10;printf("you have done a physical attack\n"); break;
 		         case 'm':gameop2->game_op = 0x02;status = 10;printf("you have done a magical attack\n"); break;
-		         case 'f':gameop2->game_op = 0xc0;status = 1;printf("you gave up\n"); break;
+		         case 'f':gameop2->game_op = 0x11;status = 1;printf("you gave up\n"); break;
 		         default : ;
 		     }
 		     gameop2->from.character    = self.character;
@@ -404,15 +404,15 @@ void struct_gameop_print(struct game_op_packet *gameop) {
 		         printf("p :physical attack\nm :magical attack\nf : give up\n");
              }
              
-             /*else if(packet->service & 0x80){
+             else if(packet->service & 0x80){
                  status = 1;
 				 if (packet->service & 0xc0) {
-			        printf("you have lost\nnow you can launch a new request\n");
+			        printf("you have won\nnow you can launch a new request\n");
 				 }
 				 else {
-					 printf("you have won\nnow you can launch a new request\n");
+					 printf("you have lost\nnow you can launch a new request\n");
 				 }
-             }*/
+             }
          }
      }               
  }

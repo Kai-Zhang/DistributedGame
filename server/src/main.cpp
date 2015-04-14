@@ -44,6 +44,7 @@ int main(int argc, char *argv[]) {
 			continue;
 		}
 
+		setsockopt(clientfd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
 		printf("Client %s accepted. Socket #%d built.\n", inet_ntoa(remote_addr.sin_addr), clientfd);
 
 		pthread_t handler;

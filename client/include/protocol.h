@@ -54,7 +54,7 @@ struct game_create_packet {
 };
 
 struct game_op_packet {
-    int game_op;
+    uint16_t game_op;
     struct player from;
     struct player to; 
 };
